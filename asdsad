@@ -1,0 +1,67 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class TargetDetected : MonoBehaviour
+{
+    [SerializeField] private float _distanceDetect;
+
+    [SerializeField] private Transform _player;
+
+    private Transform _useTarget;
+
+    private void FixedUpdate()
+    {   
+            FindClosestEnemy();
+            AssignTarget();        
+    }
+
+    private void ResetAngle()
+    {
+        var rot = transform.rotation;
+        rot.z += Time.deltaTime * Time.deltaTime *2;
+        transform.rotation = rot;
+    }
+
+    private void AssignTarget()
+    {
+        if (_useTarget != null)
+        {
+            float distanceDetect = Vector2.Distance(_useTarget.position, transform.position);
+            if (distanceDetect < _distanceDetect)
+            {
+                var dir = _useTarget.position - transform.position;
+                var euler = transform.eulerAngles;
+                euler.z = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg - 90f;
+                transform.eulerAngles = euler;
+            }
+        }
+        if (_useTarget == null)
+        {
+            ResetAngle();
+        }
+    }
+
+    private void FindClosestEnemy()
+    {
+        float distanceToClosestEnemy = Mathf.Infinity;
+        Enemy closestEnemy = null;
+        Enemy[] allEnemies = GameObject.FindObjectsOfType<Enemy>();
+
+        foreach (Enemy currentEnemy in allEnemies)
+        {
+            float distanceToEnemy = (currentEnemy.transform.position - this.transform.position).sqrMagnitude;
+            if (distanceToEnemy < distanceToClosestEnemy)
+            {
+                distanceToClosestEnemy = distanceToEnemy;
+                closestEnemy = currentEnemy;
+
+                _useTarget = currentEnemy.GetComponent<Transform>();
+            }
+        }
+
+
+    }
+}
+
+
